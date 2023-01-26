@@ -8,7 +8,7 @@ import asyncio
 BOARDWIDTH = 3  # number of columns in the board
 BOARDHEIGHT = 3  # number of rows in the board
 TILESIZE = 80
-WINDOWWIDTH = 840
+WINDOWWIDTH = 1040
 WINDOWHEIGHT = 680
 FPS = 50
 BLANK = None
@@ -66,7 +66,7 @@ async def main():
     LEVEL4_SURF, LEVEL4_RECT = makeText(
         "Level4 (5X5)",    TEXTCOLOR, TILECOLOR, 20, WINDOWHEIGHT - 60)
     IDS_SURF, IDS_RECT = makeText(
-        "IDS: 1804011, 1804016, 1804017", TEXTCOLOR, TILECOLOR, 20, 60)
+        "IDS: 1804011, 1804016, 1804017", TEXTCOLOR, BGCOLOR,WINDOWWIDTH//2-150, WINDOWHEIGHT-30)
 
     mainBoard, solutionSeq = generateNewPuzzle(10)
     # a solved board is the same as the board in a start state.

@@ -28,5 +28,4 @@ def NoOfFingers():
     cap.release()
     cv2.destroyAllWindows()
     
-
-
+# NoOfFingers()

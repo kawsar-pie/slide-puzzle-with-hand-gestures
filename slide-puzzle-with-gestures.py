@@ -6,11 +6,11 @@ from pygame.locals import *
 import FingerDetector
 
 # Create the constants (go ahead and experiment with different values)
-BOARDWIDTH = 2  # number of columns in the board
-BOARDHEIGHT = 2  # number of rows in the board
+BOARDWIDTH = 3  # number of columns in the board
+BOARDHEIGHT = 3  # number of rows in the board
 TILESIZE = 80
-WINDOWWIDTH = 640
-WINDOWHEIGHT = 480
+WINDOWWIDTH = 1040
+WINDOWHEIGHT = 680
 FPS = 30
 BLANK = None
 
@@ -43,7 +43,7 @@ RIGHT = 'right'
 
 
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT
+    global XMARGIN, YMARGIN, BOARDWIDTH, BOARDHEIGHT, FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT, LEVEL1_SURF, LEVEL1_RECT, LEVEL2_SURF, LEVEL2_RECT, LEVEL3_SURF, LEVEL3_RECT, LEVEL4_SURF, LEVEL4_RECT, IDS_SURF, IDS_RECT
 
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
@@ -53,11 +53,21 @@ def main():
 
     # Store the option buttons and their rectangles in OPTIONS.
     RESET_SURF, RESET_RECT = makeText(
-        'Reset',    TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 90)
+        'Reset',    TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 120)
     NEW_SURF,   NEW_RECT = makeText(
-        'New Game', TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 60)
+        'New Game', TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 90)
     SOLVE_SURF, SOLVE_RECT = makeText(
-        'Solve',    TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 30)
+        'Solve',    TEXTCOLOR, TILECOLOR, WINDOWWIDTH - 120, WINDOWHEIGHT - 60)
+    LEVEL1_SURF, LEVEL1_RECT = makeText(
+        "Level1 (2X2)",    TEXTCOLOR, TILECOLOR, 20, WINDOWHEIGHT - 150)
+    LEVEL2_SURF, LEVEL2_RECT = makeText(
+        "Level2 (3X3)",    TEXTCOLOR, TILECOLOR, 20, WINDOWHEIGHT - 120)
+    LEVEL3_SURF, LEVEL3_RECT = makeText(
+        "Level3 (4X4)",    TEXTCOLOR, TILECOLOR, 20, WINDOWHEIGHT - 90)
+    LEVEL4_SURF, LEVEL4_RECT = makeText(
+        "Level4 (5X5)",    TEXTCOLOR, TILECOLOR, 20, WINDOWHEIGHT - 60)
+    IDS_SURF, IDS_RECT = makeText(
+        "IDS: 1804011, 1804016, 1804017", TEXTCOLOR, BGCOLOR,WINDOWWIDTH//2-150, WINDOWHEIGHT-30)
 
     mainBoard, solutionSeq = generateNewPuzzle(80)
     # a solved board is the same as the board in a start state.
@@ -94,6 +104,50 @@ def main():
                         # clicked on Solve button
                         resetAnimation(mainBoard, solutionSeq + allMoves)
                         allMoves = []
+                    elif LEVEL1_RECT.collidepoint(event.pos):
+                        # clicked on Level1 button
+                        BOARDWIDTH = 2
+                        BOARDHEIGHT = 2
+                        XMARGIN = int(
+                            (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
+                        YMARGIN = int(
+                            (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
+                        mainBoard, solutionSeq = generateNewPuzzle(2*15)
+                        SOLVEDBOARD = getStartingBoard()
+                        allMoves = []
+                    elif LEVEL2_RECT.collidepoint(event.pos):
+                        # clicked on Level1 button
+                        BOARDWIDTH = 3
+                        BOARDHEIGHT = 3
+                        XMARGIN = int(
+                            (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
+                        YMARGIN = int(
+                            (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
+                        mainBoard, solutionSeq = generateNewPuzzle(3*15)
+                        SOLVEDBOARD = getStartingBoard()
+                        allMoves = []
+                    elif LEVEL3_RECT.collidepoint(event.pos):
+                        # clicked on Level1 button
+                        BOARDWIDTH = 4
+                        BOARDHEIGHT = 4
+                        XMARGIN = int(
+                            (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
+                        YMARGIN = int(
+                            (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
+                        mainBoard, solutionSeq = generateNewPuzzle(4*15)
+                        SOLVEDBOARD = getStartingBoard()
+                        allMoves = []
+                    elif LEVEL4_RECT.collidepoint(event.pos):
+                        # clicked on Level1 button
+                        BOARDWIDTH = 5
+                        BOARDHEIGHT = 5
+                        XMARGIN = int(
+                            (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
+                        YMARGIN = int(
+                            (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
+                        mainBoard, solutionSeq = generateNewPuzzle(5*15)
+                        SOLVEDBOARD = getStartingBoard()
+                        allMoves = []
                 else:
                     # check if the clicked tile was next to the blank spot
 
@@ -119,6 +173,7 @@ def main():
                     slideTo = DOWN
 
         fingers, hands = FingerDetector.NoOfFingers()
+        print(fingers)
         if hands != 0:
             # check if the user uses gestures
             if fingers == 1 and isValidMove(mainBoard, UP):
@@ -279,6 +334,11 @@ def drawBoard(board, message):
     pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (left - 5,
                      top - 5, width + 11, height + 11), 4)
 
+    DISPLAYSURF.blit(LEVEL1_SURF, LEVEL1_RECT)
+    DISPLAYSURF.blit(LEVEL2_SURF, LEVEL2_RECT)
+    DISPLAYSURF.blit(LEVEL3_SURF, LEVEL3_RECT)
+    DISPLAYSURF.blit(LEVEL4_SURF, LEVEL4_RECT)
+    DISPLAYSURF.blit(IDS_SURF, IDS_RECT)
     DISPLAYSURF.blit(RESET_SURF, RESET_RECT)
     DISPLAYSURF.blit(NEW_SURF, NEW_RECT)
     DISPLAYSURF.blit(SOLVE_SURF, SOLVE_RECT)
