@@ -2,11 +2,11 @@ import pygame
 import sys
 import random
 from pygame.locals import *
-import asyncio
+
 import FingerDetector
 
 # Create the constants (go ahead and experiment with different values)
-BOARDWIDTH = 2 # number of columns in the board
+BOARDWIDTH = 2  # number of columns in the board
 BOARDHEIGHT = 2  # number of rows in the board
 TILESIZE = 80
 WINDOWWIDTH = 640
@@ -74,7 +74,7 @@ def main():
         drawBoard(mainBoard, msg)
 
         checkForQuit()
-        
+
         for event in pygame.event.get():  # event handling loop
             if event.type == MOUSEBUTTONUP:
                 spotx, spoty = getSpotClicked(
@@ -117,7 +117,7 @@ def main():
                     slideTo = UP
                 elif event.key in (K_DOWN, K_s) and isValidMove(mainBoard, DOWN):
                     slideTo = DOWN
-        
+
         fingers, hands = FingerDetector.NoOfFingers()
         if hands != 0:
             # check if the user uses gestures
