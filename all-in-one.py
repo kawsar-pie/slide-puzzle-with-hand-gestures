@@ -2,7 +2,8 @@ import pygame
 import sys
 import random
 from pygame.locals import *
-import asyncio
+import cv2
+from cvzone.HandTrackingModule import HandDetector
 
 # Create the constants (go ahead and experiment with different values)
 BOARDWIDTH = 3  # number of columns in the board
@@ -10,10 +11,10 @@ BOARDHEIGHT = 3  # number of rows in the board
 TILESIZE = 80
 WINDOWWIDTH = 1040
 WINDOWHEIGHT = 680
-FPS = 50
+FPS = 30
 BLANK = None
 
-#                 R    G    B
+#        R    G    B
 BLACK = (0,   0,   0)
 WHITE = (255, 255, 255)
 BRIGHTBLUE = (0,  50, 255)
@@ -39,10 +40,11 @@ UP = 'up'
 DOWN = 'down'
 LEFT = 'left'
 RIGHT = 'right'
+mode = "MANUAL"
 
 
-async def main():
-    global XMARGIN, YMARGIN, BOARDWIDTH, BOARDHEIGHT, FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT, LEVEL1_SURF, LEVEL1_RECT,LEVEL2_SURF, LEVEL2_RECT,LEVEL3_SURF, LEVEL3_RECT,LEVEL4_SURF, LEVEL4_RECT,IDS_SURF, IDS_RECT
+def main():
+    global mode, XMARGIN, YMARGIN, BOARDWIDTH, BOARDHEIGHT, FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT, LEVEL1_SURF, LEVEL1_RECT, LEVEL2_SURF, LEVEL2_RECT, LEVEL3_SURF, LEVEL3_RECT, LEVEL4_SURF, LEVEL4_RECT, IDS_SURF, IDS_RECT, GESTURE_SURF, GESTURE_RECT, MANUAL_SURF, MANUAL_RECT
 
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
@@ -65,10 +67,14 @@ async def main():
         "Level3 (4X4)",    TEXTCOLOR, TILECOLOR, 20, WINDOWHEIGHT - 90)
     LEVEL4_SURF, LEVEL4_RECT = makeText(
         "Level4 (5X5)",    TEXTCOLOR, TILECOLOR, 20, WINDOWHEIGHT - 60)
+    GESTURE_SURF, GESTURE_RECT = makeText(
+        "Play Using Hand Gestures",   TEXTCOLOR, TILECOLOR, WINDOWWIDTH//2-150, 90)
+    MANUAL_SURF, MANUAL_RECT = makeText(
+        "Play Using Keyboard and Mouse",   TEXTCOLOR, TILECOLOR, WINDOWWIDTH//2-150, 60)
     IDS_SURF, IDS_RECT = makeText(
-        "IDS: 1804011, 1804016, 1804017", TEXTCOLOR, BGCOLOR,WINDOWWIDTH//2-150, WINDOWHEIGHT-30)
+        "IDS: 1804011, 1804016, 1804017", TEXTCOLOR, BGCOLOR, WINDOWWIDTH//2-150, WINDOWHEIGHT-30)
 
-    mainBoard, solutionSeq = generateNewPuzzle(10)
+    mainBoard, solutionSeq = generateNewPuzzle(80)
     # a solved board is the same as the board in a start state.
     SOLVEDBOARD = getStartingBoard()
     allMoves = []  # list of moves made from the solved configuration
@@ -83,6 +89,7 @@ async def main():
         drawBoard(mainBoard, msg)
 
         checkForQuit()
+
         for event in pygame.event.get():  # event handling loop
             if event.type == MOUSEBUTTONUP:
                 spotx, spoty = getSpotClicked(
@@ -146,7 +153,16 @@ async def main():
                         mainBoard, solutionSeq = generateNewPuzzle(5*15)
                         SOLVEDBOARD = getStartingBoard()
                         allMoves = []
-                else:
+
+                    elif MANUAL_RECT.collidepoint(event.pos):
+                        mode = "MANUAL"
+                        MODE_SURF, MODE_RECT = makeText(
+                            "Mode: Manual", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 30)
+                        DISPLAYSURF.blit(MODE_SURF, MODE_RECT)
+                    elif GESTURE_RECT.collidepoint(event.pos):
+                        mode = "HAND"
+
+                elif mode == "MANUAL":
                     # check if the clicked tile was next to the blank spot
 
                     blankx, blanky = getBlankPosition(mainBoard)
@@ -159,7 +175,7 @@ async def main():
                     elif spotx == blankx and spoty == blanky - 1:
                         slideTo = DOWN
 
-            elif event.type == KEYUP:
+            elif event.type == KEYUP and mode == "MANUAL":
                 # check if the user pressed a key to slide a tile
                 if event.key in (K_LEFT, K_a) and isValidMove(mainBoard, LEFT):
                     slideTo = LEFT
@@ -170,6 +186,39 @@ async def main():
                 elif event.key in (K_DOWN, K_s) and isValidMove(mainBoard, DOWN):
                     slideTo = DOWN
 
+        if mode == "HAND":
+            if mode == "MANUAL":
+                MODE_SURF, MODE_RECT = makeText(
+                    "Mode: Manual", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 30)
+                DISPLAYSURF.blit(MODE_SURF, MODE_RECT)
+            else:
+                MODE_SURF, MODE_RECT = makeText(
+                    "Mode: Hand Gestures", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 30)
+                DISPLAYSURF.blit(MODE_SURF, MODE_RECT)
+                INS_SURF, INS_RECT = makeText(
+                    "1 finger --> UP", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 60)
+                DISPLAYSURF.blit(INS_SURF, INS_RECT)
+                INS_SURF, INS_RECT = makeText(
+                    "2 fingers --> DOWN", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 90)
+                DISPLAYSURF.blit(INS_SURF, INS_RECT)
+                INS_SURF, INS_RECT = makeText(
+                    "3 fingers --> RIGHT", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 120)
+                DISPLAYSURF.blit(INS_SURF, INS_RECT)
+                INS_SURF, INS_RECT = makeText(
+                    "4 fingers --> LEFT", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 150)
+                DISPLAYSURF.blit(INS_SURF, INS_RECT)
+            fingers, hands = NoOfFingers()
+            # print(fingers)
+            if hands != 0:
+                # check if the user uses gestures
+                if fingers == 1 and isValidMove(mainBoard, UP):
+                    slideTo = UP
+                elif fingers == 2 and isValidMove(mainBoard, DOWN):
+                    slideTo = DOWN
+                elif fingers == 3 and isValidMove(mainBoard, RIGHT):
+                    slideTo = RIGHT
+                elif fingers == 4 and isValidMove(mainBoard, LEFT):
+                    slideTo = LEFT
         if slideTo:
             # show slide on screen
             slideAnimation(mainBoard, slideTo,
@@ -178,7 +227,7 @@ async def main():
             allMoves.append(slideTo)  # record the slide
         pygame.display.update()
         FPSCLOCK.tick(FPS)
-        await asyncio.sleep(0)
+        # await asyncio.sleep(0)
 
 
 def terminate():
@@ -305,6 +354,26 @@ def makeText(text, color, bgcolor, top, left):
 
 def drawBoard(board, message):
     DISPLAYSURF.fill(BGCOLOR)
+    if mode == "MANUAL":
+        MODE_SURF, MODE_RECT = makeText(
+            "Mode: Manual", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 30)
+        DISPLAYSURF.blit(MODE_SURF, MODE_RECT)
+    else:
+        MODE_SURF, MODE_RECT = makeText(
+            "Mode: Hand Gestures", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 30)
+        DISPLAYSURF.blit(MODE_SURF, MODE_RECT)
+        INS_SURF, INS_RECT = makeText(
+            "1 finger --> UP", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 60)
+        DISPLAYSURF.blit(INS_SURF, INS_RECT)
+        INS_SURF, INS_RECT = makeText(
+            "2 fingers --> DOWN", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 90)
+        DISPLAYSURF.blit(INS_SURF, INS_RECT)
+        INS_SURF, INS_RECT = makeText(
+            "3 fingers --> RIGHT", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 120)
+        DISPLAYSURF.blit(INS_SURF, INS_RECT)
+        INS_SURF, INS_RECT = makeText(
+            "4 fingers --> LEFT", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 150)
+        DISPLAYSURF.blit(INS_SURF, INS_RECT)
     if message:
         textSurf, textRect = makeText(message, MESSAGECOLOR, BGCOLOR, 5, 5)
         DISPLAYSURF.blit(textSurf, textRect)
@@ -324,6 +393,8 @@ def drawBoard(board, message):
     DISPLAYSURF.blit(LEVEL2_SURF, LEVEL2_RECT)
     DISPLAYSURF.blit(LEVEL3_SURF, LEVEL3_RECT)
     DISPLAYSURF.blit(LEVEL4_SURF, LEVEL4_RECT)
+    DISPLAYSURF.blit(GESTURE_SURF, GESTURE_RECT)
+    DISPLAYSURF.blit(MANUAL_SURF, MANUAL_RECT)
     DISPLAYSURF.blit(IDS_SURF, IDS_RECT)
     DISPLAYSURF.blit(RESET_SURF, RESET_RECT)
     DISPLAYSURF.blit(NEW_SURF, NEW_RECT)
@@ -405,10 +476,35 @@ def resetAnimation(board, allMoves):
             oppositeMove = LEFT
         elif move == LEFT:
             oppositeMove = RIGHT
-        slideAnimation(board, oppositeMove, 'Solving...',
+        slideAnimation(board, oppositeMove, '',
                        animationSpeed=int(TILESIZE / 8))
         makeMove(board, oppositeMove)
 
 
+def NoOfFingers():
+    wCam, hCam = 1200, 780
+    cap = cv2.VideoCapture(0)
+    cap.set(3, wCam)
+    cap.set(4, hCam)
+    pTime = 0
+
+    detector = HandDetector(detectionCon=0.70, maxHands=1)
+
+    while True:
+        success, img = cap.read()
+        hands, img = detector.findHands(img)
+        # if len(hands)!=0:
+        #     break
+
+        if len(hands) != 0:
+
+            fingers = detector.fingersUp(hands[0])
+
+            noOfFingers = fingers.count(1)
+            print(noOfFingers)
+            # print("From Function Called")
+            return (noOfFingers, len(hands))
+
+
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()

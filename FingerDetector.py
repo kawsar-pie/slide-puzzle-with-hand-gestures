@@ -13,19 +13,19 @@ def NoOfFingers():
     while True:
         success, img = cap.read()
         hands, img = detector.findHands(img)
+        # if len(hands)!=0:
+        #     break
+
         if len(hands)!=0:
-            break
 
-    if len(hands)!=0:
+            fingers = detector.fingersUp(hands[0])
 
-        fingers = detector.fingersUp(hands[0])
+            noOfFingers = fingers.count(1)
+            print(noOfFingers)
+            # print("From Function Called")
+            return (noOfFingers,len(hands))
 
-        noOfFingers = fingers.count(1)
-        # print(noOfFingers)
-        # print("From Function Called")
-        return (noOfFingers,len(hands))
-
-    cap.release()
-    cv2.destroyAllWindows()
+    # cap.release()
+    # cv2.destroyAllWindows()
     
 # NoOfFingers()
