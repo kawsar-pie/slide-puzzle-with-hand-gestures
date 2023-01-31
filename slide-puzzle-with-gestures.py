@@ -5,7 +5,6 @@ from pygame.locals import *
 
 import FingerDetector
 
-# Create the constants (go ahead and experiment with different values)
 BOARDWIDTH = 3  # number of columns in the board
 BOARDHEIGHT = 3  # number of rows in the board
 TILESIZE = 80
@@ -42,6 +41,7 @@ LEFT = 'left'
 RIGHT = 'right'
 mode = "MANUAL"
 
+
 def main():
     global mode, XMARGIN, YMARGIN, BOARDWIDTH, BOARDHEIGHT, FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT, LEVEL1_SURF, LEVEL1_RECT, LEVEL2_SURF, LEVEL2_RECT, LEVEL3_SURF, LEVEL3_RECT, LEVEL4_SURF, LEVEL4_RECT, IDS_SURF, IDS_RECT, GESTURE_SURF, GESTURE_RECT, MANUAL_SURF, MANUAL_RECT
 
@@ -77,8 +77,7 @@ def main():
     # a solved board is the same as the board in a start state.
     SOLVEDBOARD = getStartingBoard()
     allMoves = []  # list of moves made from the solved configuration
-    
-    
+
     while True:  # main game loop
         slideTo = None  # the direction, if any, a tile should slide
         # contains the message to show in the upper left corner.
@@ -117,7 +116,7 @@ def main():
                             (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
                         YMARGIN = int(
                             (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(2*15)
+                        mainBoard, solutionSeq = generateNewPuzzle(2*10)
                         SOLVEDBOARD = getStartingBoard()
                         allMoves = []
                     elif LEVEL2_RECT.collidepoint(event.pos):
@@ -128,7 +127,7 @@ def main():
                             (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
                         YMARGIN = int(
                             (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(3*15)
+                        mainBoard, solutionSeq = generateNewPuzzle(3*10)
                         SOLVEDBOARD = getStartingBoard()
                         allMoves = []
                     elif LEVEL3_RECT.collidepoint(event.pos):
@@ -139,7 +138,7 @@ def main():
                             (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
                         YMARGIN = int(
                             (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(4*15)
+                        mainBoard, solutionSeq = generateNewPuzzle(4*10)
                         SOLVEDBOARD = getStartingBoard()
                         allMoves = []
                     elif LEVEL4_RECT.collidepoint(event.pos):
@@ -150,7 +149,7 @@ def main():
                             (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
                         YMARGIN = int(
                             (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(5*15)
+                        mainBoard, solutionSeq = generateNewPuzzle(5*10)
                         SOLVEDBOARD = getStartingBoard()
                         allMoves = []
 
@@ -161,7 +160,7 @@ def main():
                         DISPLAYSURF.blit(MODE_SURF, MODE_RECT)
                     elif GESTURE_RECT.collidepoint(event.pos):
                         mode = "HAND"
-            
+
                 elif mode == "MANUAL":
                     # check if the clicked tile was next to the blank spot
 
@@ -202,7 +201,7 @@ def main():
         if slideTo:
             # show slide on screen
             slideAnimation(mainBoard, slideTo,
-                        'Click tile or press arrow keys or use hand gestures to slide.', 8)
+                           'Click tile or press arrow keys or use hand gestures to slide.', 8)
             makeMove(mainBoard, slideTo)
             allMoves.append(slideTo)  # record the slide
         pygame.display.update()
@@ -336,7 +335,7 @@ def drawBoard(board, message):
     DISPLAYSURF.fill(BGCOLOR)
     if mode == "MANUAL":
         MODE_SURF, MODE_RECT = makeText(
-        "Mode: Manual", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 30)
+            "Mode: Manual", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 30)
         DISPLAYSURF.blit(MODE_SURF, MODE_RECT)
     else:
         MODE_SURF, MODE_RECT = makeText(
@@ -435,7 +434,7 @@ def generateNewPuzzle(numSlides):
     for i in range(numSlides):
         move = getRandomMove(board, lastMove)
         slideAnimation(board, move, 'Generating new puzzle...',
-                       animationSpeed=int(TILESIZE / 2))
+                       animationSpeed=int(TILESIZE *5))
         makeMove(board, move)
         sequence.append(move)
         lastMove = move
