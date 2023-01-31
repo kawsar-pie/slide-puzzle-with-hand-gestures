@@ -10,22 +10,20 @@ def NoOfFingers():
     cap.set(4, hCam)
     pTime = 0
 
-    detector = HandDetector(detectionCon=0.60, maxHands=1)
+    detector = HandDetector(detectionCon=0.75, maxHands=1)
 
-    while True:
-        success, img = cap.read()
-        hands, img = detector.findHands(img)
-        # if len(hands)!=0:
-        #     break
+    success, img = cap.read()
+    hands, img = detector.findHands(img)
 
-        if len(hands) != 0:
+    if len(hands) != 0:
 
-            fingers = detector.fingersUp(hands[0])
+        fingers = detector.fingersUp(hands[0])
 
-            noOfFingers = fingers.count(1)
-            print(noOfFingers)
-            # print("From Function Called")
-            return (noOfFingers, len(hands))
+        noOfFingers = fingers.count(1)
+        print(noOfFingers)
+        # print("From Function Called")
+        return (noOfFingers, len(hands))
+    return (0,0)
 
 
 # NoOfFingers()

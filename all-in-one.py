@@ -4,7 +4,7 @@ import random
 from pygame.locals import *
 import cv2
 from cvzone.HandTrackingModule import HandDetector
-
+from PIL import Image as im
 
 BOARDWIDTH = 2  # number of columns in the board
 BOARDHEIGHT = 2  # number of rows in the board
@@ -74,7 +74,7 @@ def main():
     IDS_SURF, IDS_RECT = makeText(
         "IDS: 1804011, 1804016, 1804017", TEXTCOLOR, BGCOLOR, WINDOWWIDTH//2-150, WINDOWHEIGHT-30)
 
-    mainBoard, solutionSeq = generateNewPuzzle(80)
+    mainBoard, solutionSeq = generateNewPuzzle(0)
     # a solved board is the same as the board in a start state.
     SOLVEDBOARD = getStartingBoard()
     allMoves = []  # list of moves made from the solved configuration
@@ -89,9 +89,7 @@ def main():
         drawBoard(mainBoard, msg)
 
         checkForQuit()
-        events1 = pygame.event.get()
-        # eventHandling(events1)
-        for event in events1:  # event handling loop
+        for event in pygame.event.get():  # event handling loop
             if event.type == MOUSEBUTTONUP:
                 spotx, spoty = getSpotClicked(
                     mainBoard, event.pos[0], event.pos[1])
@@ -208,7 +206,7 @@ def main():
             INS_SURF, INS_RECT = makeText(
                 "4 fingers --> LEFT", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 150)
             DISPLAYSURF.blit(INS_SURF, INS_RECT)
-            fingers, hands = NoOfFingers(events1)
+            fingers, hands = NoOfFingers()
             # print(fingers)
             if hands != 0:
                 # check if the user uses gestures
@@ -482,129 +480,31 @@ def resetAnimation(board, allMoves):
         makeMove(board, oppositeMove)
 
 
-def NoOfFingers(events1):
-    wCam, hCam = 1200, 780
+def NoOfFingers():
+    wCam, hCam = 1, 5
     cap = cv2.VideoCapture(0)
-    cap.set(3, wCam)
-    cap.set(4, hCam)
+    cap.set(1, wCam)
+    cap.set(2, hCam)
     pTime = 0
 
     detector = HandDetector(detectionCon=0.70, maxHands=1)
 
-    while True:
-        success, img = cap.read()
-        hands, img = detector.findHands(img)
-        events2 = pygame.event.get()
-        if len(events2) > len(events1):
-            eventHandling(events2)
-            return (0,0)
-        if len(hands) != 0:
+    success, img = cap.read()
+    hands, img = detector.findHands(img)
+    #vdo = cv2.imshow("Video", img)
+    #pic = im.fromarray(img)
+    #DISPLAYSURF.blit(pic.get_rect(), (0,  0))
+    #if cv2.waitKey(1) & 0xFF == ord('q'):
+    #    return 0,0
+    if len(hands) != 0:
 
-            fingers = detector.fingersUp(hands[0])
+        fingers = detector.fingersUp(hands[0])
 
-            noOfFingers = fingers.count(1)
-            print(noOfFingers)
-            # print("From Function Called")
-            return (noOfFingers, len(hands))
-
-def eventHandling(events):
-    global allMoves,mainBoard,mode, XMARGIN, YMARGIN, BOARDWIDTH, BOARDHEIGHT, FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT, LEVEL1_SURF, LEVEL1_RECT, LEVEL2_SURF, LEVEL2_RECT, LEVEL3_SURF, LEVEL3_RECT, LEVEL4_SURF, LEVEL4_RECT, IDS_SURF, IDS_RECT, GESTURE_SURF, GESTURE_RECT, MANUAL_SURF, MANUAL_RECT
-
-    for event in events:  # event handling loop
-            if event.type == MOUSEBUTTONUP:
-                spotx, spoty = getSpotClicked(
-                    mainBoard, event.pos[0], event.pos[1])
-
-                if (spotx, spoty) == (None, None):
-                    # check if the user clicked on an option button
-                    if RESET_RECT.collidepoint(event.pos):
-                        # clicked on Reset button
-                        resetAnimation(mainBoard, allMoves)
-                        allMoves = []
-                    elif NEW_RECT.collidepoint(event.pos):
-                        mainBoard, solutionSeq = generateNewPuzzle(
-                            80)  # clicked on New Game button
-                        allMoves = []
-                    elif SOLVE_RECT.collidepoint(event.pos):
-                        # clicked on Solve button
-                        resetAnimation(mainBoard, solutionSeq + allMoves)
-                        allMoves = []
-                    elif LEVEL1_RECT.collidepoint(event.pos):
-                        # clicked on Level1 button
-                        BOARDWIDTH = 2
-                        BOARDHEIGHT = 2
-                        XMARGIN = int(
-                            (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
-                        YMARGIN = int(
-                            (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(2*15)
-                        SOLVEDBOARD = getStartingBoard()
-                        allMoves = []
-                    elif LEVEL2_RECT.collidepoint(event.pos):
-                        # clicked on Level1 button
-                        BOARDWIDTH = 3
-                        BOARDHEIGHT = 3
-                        XMARGIN = int(
-                            (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
-                        YMARGIN = int(
-                            (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(3*15)
-                        SOLVEDBOARD = getStartingBoard()
-                        allMoves = []
-                    elif LEVEL3_RECT.collidepoint(event.pos):
-                        # clicked on Level1 button
-                        BOARDWIDTH = 4
-                        BOARDHEIGHT = 4
-                        XMARGIN = int(
-                            (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
-                        YMARGIN = int(
-                            (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(4*15)
-                        SOLVEDBOARD = getStartingBoard()
-                        allMoves = []
-                    elif LEVEL4_RECT.collidepoint(event.pos):
-                        # clicked on Level1 button
-                        BOARDWIDTH = 5
-                        BOARDHEIGHT = 5
-                        XMARGIN = int(
-                            (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
-                        YMARGIN = int(
-                            (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(5*15)
-                        SOLVEDBOARD = getStartingBoard()
-                        allMoves = []
-
-                    elif MANUAL_RECT.collidepoint(event.pos):
-                        mode = "MANUAL"
-                        MODE_SURF, MODE_RECT = makeText(
-                            "Mode: Manual", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 30)
-                        DISPLAYSURF.blit(MODE_SURF, MODE_RECT)
-                    elif GESTURE_RECT.collidepoint(event.pos):
-                        mode = "HAND"
-
-                elif mode == "MANUAL":
-                    # check if the clicked tile was next to the blank spot
-
-                    blankx, blanky = getBlankPosition(mainBoard)
-                    if spotx == blankx + 1 and spoty == blanky:
-                        slideTo = LEFT
-                    elif spotx == blankx - 1 and spoty == blanky:
-                        slideTo = RIGHT
-                    elif spotx == blankx and spoty == blanky + 1:
-                        slideTo = UP
-                    elif spotx == blankx and spoty == blanky - 1:
-                        slideTo = DOWN
-
-            elif event.type == KEYUP and mode == "MANUAL":
-                # check if the user pressed a key to slide a tile
-                if event.key in (K_LEFT, K_a) and isValidMove(mainBoard, LEFT):
-                    slideTo = LEFT
-                elif event.key in (K_RIGHT, K_d) and isValidMove(mainBoard, RIGHT):
-                    slideTo = RIGHT
-                elif event.key in (K_UP, K_w) and isValidMove(mainBoard, UP):
-                    slideTo = UP
-                elif event.key in (K_DOWN, K_s) and isValidMove(mainBoard, DOWN):
-                    slideTo = DOWN
+        noOfFingers = fingers.count(1)
+        print(noOfFingers)
+        # print("From Function Called")
+        return (noOfFingers, len(hands))
+    return (0,0)
 
 if __name__ == '__main__':
     main()

@@ -201,7 +201,7 @@ def main():
         if slideTo:
             # show slide on screen
             slideAnimation(mainBoard, slideTo,
-                           'Click tile or press arrow keys or use hand gestures to slide.', 8)
+                           'Click tile or press arrow keys or use hand gestures to slide.', 15)
             makeMove(mainBoard, slideTo)
             allMoves.append(slideTo)  # record the slide
         pygame.display.update()
