@@ -4,17 +4,12 @@ import time
 
 
 def NoOfFingers():
-    wCam, hCam = 1200, 780
     cap = cv2.VideoCapture(0)
-    cap.set(3, wCam)
-    cap.set(4, hCam)
-    pTime = 0
-
-    detector = HandDetector(detectionCon=0.75, maxHands=1)
+    detector = HandDetector(detectionCon=0.70, maxHands=1)
 
     success, img = cap.read()
     hands, img = detector.findHands(img)
-
+    vdo = cv2.imshow("Hand Gesture Mode", img)
     if len(hands) != 0:
 
         fingers = detector.fingersUp(hands[0])
@@ -23,7 +18,7 @@ def NoOfFingers():
         print(noOfFingers)
         # print("From Function Called")
         return (noOfFingers, len(hands))
-    return (0,0)
+    return (0, 0)
 
 
 # NoOfFingers()

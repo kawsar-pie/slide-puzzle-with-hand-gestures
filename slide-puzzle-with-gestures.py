@@ -2,13 +2,15 @@ import pygame
 import sys
 import random
 from pygame.locals import *
-
+import cv2
+from cvzone.HandTrackingModule import HandDetector
+from PIL import Image as im
 import FingerDetector
 
 BOARDWIDTH = 3  # number of columns in the board
 BOARDHEIGHT = 3  # number of rows in the board
 TILESIZE = 80
-WINDOWWIDTH = 1040
+WINDOWWIDTH = 850
 WINDOWHEIGHT = 680
 FPS = 30
 BLANK = None
@@ -40,12 +42,16 @@ DOWN = 'down'
 LEFT = 'left'
 RIGHT = 'right'
 mode = "MANUAL"
+isPlaying = False
+isSolved = False
+noOfMoves = 0
 
 
 def main():
-    global mode, XMARGIN, YMARGIN, BOARDWIDTH, BOARDHEIGHT, FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT, LEVEL1_SURF, LEVEL1_RECT, LEVEL2_SURF, LEVEL2_RECT, LEVEL3_SURF, LEVEL3_RECT, LEVEL4_SURF, LEVEL4_RECT, IDS_SURF, IDS_RECT, GESTURE_SURF, GESTURE_RECT, MANUAL_SURF, MANUAL_RECT
-
+    global noOfMoves, isPlaying, isSolved, seconds, start_ticks, allMoves, mainBoard, mode, XMARGIN, YMARGIN, BOARDWIDTH, BOARDHEIGHT, FPSCLOCK, DISPLAYSURF, BASICFONT, RESET_SURF, RESET_RECT, NEW_SURF, NEW_RECT, SOLVE_SURF, SOLVE_RECT, LEVEL1_SURF, LEVEL1_RECT, LEVEL2_SURF, LEVEL2_RECT, LEVEL3_SURF, LEVEL3_RECT, LEVEL4_SURF, LEVEL4_RECT, IDS_SURF, IDS_RECT, GESTURE_SURF, GESTURE_RECT, MANUAL_SURF, MANUAL_RECT, TIMER_SURF, TIMER_RECT
     pygame.init()
+    start_ticks = pygame.time.get_ticks()
+    seconds = 0
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption('Slide Puzzle')
@@ -73,22 +79,25 @@ def main():
     IDS_SURF, IDS_RECT = makeText(
         "IDS: 1804011, 1804016, 1804017", TEXTCOLOR, BGCOLOR, WINDOWWIDTH//2-150, WINDOWHEIGHT-30)
 
-    mainBoard, solutionSeq = generateNewPuzzle(80)
+    mainBoard, solutionSeq = generateNewPuzzle(0)
     # a solved board is the same as the board in a start state.
     SOLVEDBOARD = getStartingBoard()
     allMoves = []  # list of moves made from the solved configuration
-
+    drawBoard(mainBoard, "Welcome")
+    isWelcomePage = 1
     while True:  # main game loop
         slideTo = None  # the direction, if any, a tile should slide
         # contains the message to show in the upper left corner.
-        msg = 'Click tile or press arrow keys or use hand gestures to slide.'
+        msg = 'Click tile or press arrow keys to slide.'
         if mainBoard == SOLVEDBOARD:
             msg = 'Solved!'
-
-        drawBoard(mainBoard, msg)
+            isSolved = True
+        else:
+            isSolved = False
+        if isWelcomePage!=1:    
+            drawBoard(mainBoard, msg)
 
         checkForQuit()
-
         for event in pygame.event.get():  # event handling loop
             if event.type == MOUSEBUTTONUP:
                 spotx, spoty = getSpotClicked(
@@ -98,72 +107,115 @@ def main():
                     # check if the user clicked on an option button
                     if RESET_RECT.collidepoint(event.pos):
                         # clicked on Reset button
+                        isPlaying = False
                         resetAnimation(mainBoard, allMoves)
                         allMoves = []
+                        noOfMoves = 0
+                        
+
                     elif NEW_RECT.collidepoint(event.pos):
+                        isPlaying = False
                         mainBoard, solutionSeq = generateNewPuzzle(
-                            80)  # clicked on New Game button
+                            30)
+                        # clicked on New Game button
                         allMoves = []
+                        isPlaying = True
+                        pygame.init()
+                        start_ticks = pygame.time.get_ticks()
+                        noOfMoves = 0
+                        isWelcomePage = -1
+
                     elif SOLVE_RECT.collidepoint(event.pos):
                         # clicked on Solve button
+                        isPlaying = False
                         resetAnimation(mainBoard, solutionSeq + allMoves)
                         allMoves = []
+
                     elif LEVEL1_RECT.collidepoint(event.pos):
                         # clicked on Level1 button
+                        noOfMoves =0
+                        isPlaying = False
                         BOARDWIDTH = 2
                         BOARDHEIGHT = 2
                         XMARGIN = int(
                             (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
                         YMARGIN = int(
                             (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(2*10)
+                        mainBoard, solutionSeq = generateNewPuzzle(2*15)
                         SOLVEDBOARD = getStartingBoard()
                         allMoves = []
+                        isPlaying = True
+                        isWelcomePage = -1
+                        pygame.init()
+                        start_ticks = pygame.time.get_ticks()
+
                     elif LEVEL2_RECT.collidepoint(event.pos):
-                        # clicked on Level1 button
+                        # clicked on Level2 button
+                        noOfMoves =0
+                        isPlaying = False
                         BOARDWIDTH = 3
                         BOARDHEIGHT = 3
                         XMARGIN = int(
                             (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
                         YMARGIN = int(
                             (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(3*10)
+                        mainBoard, solutionSeq = generateNewPuzzle(3*15)
                         SOLVEDBOARD = getStartingBoard()
                         allMoves = []
+                        isPlaying = True
+                        isWelcomePage = -1
+                        pygame.init()
+                        start_ticks = pygame.time.get_ticks()
+
                     elif LEVEL3_RECT.collidepoint(event.pos):
-                        # clicked on Level1 button
+                        # clicked on Level3 button
+                        noOfMoves =0
+                        isPlaying = False
                         BOARDWIDTH = 4
                         BOARDHEIGHT = 4
                         XMARGIN = int(
                             (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
                         YMARGIN = int(
                             (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(4*10)
+                        mainBoard, solutionSeq = generateNewPuzzle(4*15)
                         SOLVEDBOARD = getStartingBoard()
                         allMoves = []
+                        isPlaying = True
+                        isWelcomePage = -1
+                        pygame.init()
+                        start_ticks = pygame.time.get_ticks()
+
                     elif LEVEL4_RECT.collidepoint(event.pos):
-                        # clicked on Level1 button
+                        # clicked on Level4 button
+                        noOfMoves =0
+                        isPlaying = False
                         BOARDWIDTH = 5
                         BOARDHEIGHT = 5
                         XMARGIN = int(
                             (WINDOWWIDTH - (TILESIZE * BOARDWIDTH + (BOARDWIDTH - 1))) / 2)
                         YMARGIN = int(
                             (WINDOWHEIGHT - (TILESIZE * BOARDHEIGHT + (BOARDHEIGHT - 1))) / 2)
-                        mainBoard, solutionSeq = generateNewPuzzle(5*10)
+                        mainBoard, solutionSeq = generateNewPuzzle(5*15)
                         SOLVEDBOARD = getStartingBoard()
                         allMoves = []
+                        isPlaying = True
+                        isWelcomePage = -1
+                        pygame.init()
+                        start_ticks = pygame.time.get_ticks()
 
                     elif MANUAL_RECT.collidepoint(event.pos):
+                        # clicked on Manual Mode button
                         mode = "MANUAL"
+                        cv2.destroyAllWindows()
                         MODE_SURF, MODE_RECT = makeText(
                             "Mode: Manual", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 30)
                         DISPLAYSURF.blit(MODE_SURF, MODE_RECT)
                     elif GESTURE_RECT.collidepoint(event.pos):
+                        # clicked on Gestures Mode button
                         mode = "HAND"
 
                 elif mode == "MANUAL":
                     # check if the clicked tile was next to the blank spot
-
                     blankx, blanky = getBlankPosition(mainBoard)
                     if spotx == blankx + 1 and spoty == blanky:
                         slideTo = LEFT
@@ -186,10 +238,24 @@ def main():
                     slideTo = DOWN
 
         if mode == "HAND":
+            MODE_SURF, MODE_RECT = makeText(
+                "Mode: Hand Gestures", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 30)
+            DISPLAYSURF.blit(MODE_SURF, MODE_RECT)
+            INS_SURF, INS_RECT = makeText(
+                "1 Finger --> UP", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 60)
+            DISPLAYSURF.blit(INS_SURF, INS_RECT)
+            INS_SURF, INS_RECT = makeText(
+                "2 Fingers --> DOWN", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 90)
+            DISPLAYSURF.blit(INS_SURF, INS_RECT)
+            INS_SURF, INS_RECT = makeText(
+                "3 Fingers --> RIGHT", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 120)
+            DISPLAYSURF.blit(INS_SURF, INS_RECT)
+            INS_SURF, INS_RECT = makeText(
+                "4 Fingers --> LEFT", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 150)
+            DISPLAYSURF.blit(INS_SURF, INS_RECT)
             fingers, hands = FingerDetector.NoOfFingers()
             # print(fingers)
             if hands != 0:
-                # check if the user uses gestures
                 if fingers == 1 and isValidMove(mainBoard, UP):
                     slideTo = UP
                 elif fingers == 2 and isValidMove(mainBoard, DOWN):
@@ -198,15 +264,20 @@ def main():
                     slideTo = RIGHT
                 elif fingers == 4 and isValidMove(mainBoard, LEFT):
                     slideTo = LEFT
+            
         if slideTo:
             # show slide on screen
-            slideAnimation(mainBoard, slideTo,
-                           'Click tile or press arrow keys or use hand gestures to slide.', 15)
-            makeMove(mainBoard, slideTo)
-            allMoves.append(slideTo)  # record the slide
+            if isSolved==False:
+                slideAnimation(mainBoard, slideTo,
+                            'Click tile or press arrow keys to slide.', 8,isSolved) 
+                noOfMoves += 1
+                makeMove(mainBoard, slideTo, isSolved)
+                allMoves.append(slideTo)  # record the slide   
         pygame.display.update()
         FPSCLOCK.tick(FPS)
-        # await asyncio.sleep(0)
+        if isSolved==False:
+            seconds = (pygame.time.get_ticks()-start_ticks)//1000
+        # drawBoard(mainBoard,msg)
 
 
 def terminate():
@@ -249,10 +320,9 @@ def getBlankPosition(board):
                 return (x, y)
 
 
-def makeMove(board, move):
+def makeMove(board, move, isSolved=False):
     # This function does not check if the move is valid.
     blankx, blanky = getBlankPosition(board)
-
     if move == UP:
         board[blankx][blanky], board[blankx][blanky +
                                              1] = board[blankx][blanky + 1], board[blankx][blanky]
@@ -331,8 +401,16 @@ def makeText(text, color, bgcolor, top, left):
     return (textSurf, textRect)
 
 
-def drawBoard(board, message):
+def drawBoard(board, message,isSolved=False):
     DISPLAYSURF.fill(BGCOLOR)
+    TIMER_SURF, TIMER_RECT = makeText(
+        "Timer: "+str(seconds)+" s", TEXTCOLOR, BGCOLOR, 50, 60)
+    MOVES_SURF, MOVES_RECT = makeText(
+        "Moves: "+str(noOfMoves), TEXTCOLOR, BGCOLOR, 50, 90)
+
+    if isPlaying == True:
+        DISPLAYSURF.blit(TIMER_SURF, TIMER_RECT)
+        DISPLAYSURF.blit(MOVES_SURF, MOVES_RECT)
     if mode == "MANUAL":
         MODE_SURF, MODE_RECT = makeText(
             "Mode: Manual", MESSAGECOLOR, BGCOLOR, WINDOWWIDTH - 220, 30)
@@ -380,9 +458,8 @@ def drawBoard(board, message):
     DISPLAYSURF.blit(SOLVE_SURF, SOLVE_RECT)
 
 
-def slideAnimation(board, direction, message, animationSpeed):
+def slideAnimation(board, direction, message, animationSpeed,isSolved=False):
     # Note: This function does not check if the move is valid.
-
     blankx, blanky = getBlankPosition(board)
     if direction == UP:
         movex = blankx
@@ -434,7 +511,7 @@ def generateNewPuzzle(numSlides):
     for i in range(numSlides):
         move = getRandomMove(board, lastMove)
         slideAnimation(board, move, 'Generating new puzzle...',
-                       animationSpeed=int(TILESIZE *5))
+                       animationSpeed=int(TILESIZE / 2))
         makeMove(board, move)
         sequence.append(move)
         lastMove = move
@@ -455,10 +532,9 @@ def resetAnimation(board, allMoves):
             oppositeMove = LEFT
         elif move == LEFT:
             oppositeMove = RIGHT
-        slideAnimation(board, oppositeMove, 'Solving...',
+        slideAnimation(board, oppositeMove, '',
                        animationSpeed=int(TILESIZE / 8))
         makeMove(board, oppositeMove)
-
 
 if __name__ == '__main__':
     main()
