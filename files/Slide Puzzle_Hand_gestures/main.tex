@@ -1,0 +1,64 @@
+% ------------------------------------------------------------------------------
+% Mathematics Project Report Template
+% by Jon Shiach 2019
+% Manchester Metropolitan University
+% ------------------------------------------------------------------------------
+\documentclass[11pt]{report} 
+
+\usepackage{projectreport}
+
+% ------------------------------------------------------------------------------
+% Enter your details here
+% ------------------------------------------------------------------------------
+\newcommand{\name}{Shariful Islam (1804011)
+\\Md. Sajjadu Zaman (1804016)
+\\Kawsar Ahmed Shamim (1804017)}
+
+% \newcommand{\course}{BSc. (Hons) Mathematics}
+% \newcommand{\course}{BSc. (Hons) Financial Mathematics}
+% \newcommand{\course}{MMath. (Hons) Mathematics}
+% \newcommand{\course}{BSc. (Hons) Secondary Mathematics Education with QTS}
+\newcommand{\projecttitle}{Slide Puzzle Game Using Hand Gestures}
+\newcommand{\submissiondate}{February 2023}
+
+
+% ------------------------------------------------------------------------------
+% Document
+% ------------------------------------------------------------------------------
+\begin{document}
+
+\maketitle
+
+% ------------------------------------------------------------------------------
+% Top matter
+% ------------------------------------------------------------------------------
+\chapter*{Abstract}
+ The slide puzzle game is a unique gaming experience that uses hand gestures for control, developed using the powerful combination of Python, PyGame, and OpenCV. This game offers players a fun and interactive way to solve puzzles by sliding the puzzle pieces with their hand gestures. The game uses OpenCV to track hand movements and translate them into actions in the game, making it a highly immersive and engaging experience. The game is built using PyGame, a popular game development library in Python, which provides a smooth and seamless experience for players. The slide puzzle game features beautiful graphics and a user-friendly interface, making it easy for players of all ages and skill levels to pick up and play. The game offers a range of challenging levels that will keep players engaged for hours on end. With its unique hand gesture control system, the slide puzzle game is sure to be a hit with players who are looking for a new and exciting way to enjoy puzzle games. Whether you're a casual or hardcore gamer, this game is sure to provide an enjoyable experience for everyone.
+
+\tableofcontents
+% \listoftables
+% \lstlistoflistings		% comment out if not needed
+
+% ------------------------------------------------------------------------------
+% Main matter
+% Chapters are added to the document using the \include{chapterx} command
+% ------------------------------------------------------------------------------
+\newpage
+\setcounter{page}{0}
+\pagenumbering{arabic}
+\include{chapter1}
+\include{chapter2} 
+\include{chapter3} 
+\include{chapter4} 
+\include{chapter5} 
+% ------------------------------------------------------------------------------
+% Reference list
+% ------------------------------------------------------------------------------
+\addcontentsline{toc}{chapter}{References}
+\renewcommand\bibname{References}
+\printbibliography
+
+% ------------------------------------------------------------------------------
+% Appendices
+% ------------------------------------------------------------------------------
+\end{document}

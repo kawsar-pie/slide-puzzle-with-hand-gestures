@@ -4,7 +4,7 @@ import random
 from pygame.locals import *
 import cv2
 from cvzone.HandTrackingModule import HandDetector
-from PIL import Image as im
+# from PIL import Image as im
 import FingerDetector
 
 BOARDWIDTH = 3  # number of columns in the board
@@ -115,8 +115,7 @@ def main():
 
                     elif NEW_RECT.collidepoint(event.pos):
                         isPlaying = False
-                        mainBoard, solutionSeq = generateNewPuzzle(
-                            30)
+                        mainBoard, solutionSeq = generateNewPuzzle(30)
                         # clicked on New Game button
                         allMoves = []
                         isPlaying = True
